@@ -9,7 +9,7 @@ This project is to help improve my understanding of AI/ML. Also, providing an op
 
 ## Objectives
 Create a Threat Detector by training a neural network on real-world labeled network traffic (CCIDS2017 dataset) to classify traffic as benign or malicious. <br>
-Simulate a real attacker (Adversarial Attacker) by using FGSM and PGD attacks to craft malicious network traffic that the model missclassifies as safe. <br>
+Simulate a real attacker (Adversarial Attacker) by using FGSM(Fast Gradient Sign Method) and PGD attacks to craft malicious network traffic that the model missclassifies as safe. <br>
 Retrain the model using adversarial training (feeding it attack examples during training) and apply input preprocessing defenses. 
 
 ## Project Sturcture
@@ -27,8 +27,8 @@ requirements.txt
 ## What I learned
 - I learned how to run jupyter notebook from Visual Studio Code terminal. I usually run jupyter notebook on Google Drive.
 - I learned that I had to only take 30% of each file which is still hundreds of thousands of rows. The full dataset is too big for my current RAM. 
-- I learned that F1 score is better for imbalanced classes because it balances both recall and precision. False positives and false negatives affect the score <br>
-F1 uses a harmonic mean, the F1 score is only high if both precision and recall are high.  
+- I learned that F1 score is better for imbalanced classes because it balances both recall and precision. False positives and false negatives affect the score. <br>
+F1 uses a harmonic mean, the F1 score is only high if both precision and recall are high. 
 
 ## Resources and Works Cited
 - Iman Sharafaldin, Arash Habibi Lashkari, and Ali A. Ghorbani, “Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization”, 4th International Conference on Information Systems Security and Privacy (ICISSP), Portugal, January 2018.
