@@ -5,7 +5,10 @@ __pycache__/
 *.pyo
 *.pyd
 data/
-results/
+results/*.pth
+results/*.md
+results/*.pkl
+results/.ipynb_checkpoints/
 *.pth
 *.pkl
 .ipynb_checkpoints/
