@@ -45,7 +45,7 @@ Network Flow Features (78)
          │
     [Linear  64] → BatchNorm → ReLU → Dropout(0.3)
          │
-    [Linear   2] ──► Benign (0) / Attack (1)
+    [Linear   2] → Benign (0) / Attack (1)
 ```
 
 ---
