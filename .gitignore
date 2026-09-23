@@ -9,6 +9,7 @@ results/*.pth
 results/*.md
 results/*.pkl
 results/.ipynb_checkpoints/
+results/*.npz
 *.pth
 *.pkl
 .ipynb_checkpoints/

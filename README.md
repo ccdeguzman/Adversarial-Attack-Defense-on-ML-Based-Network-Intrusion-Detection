@@ -11,26 +11,30 @@ This project is to help improve my understanding of AI/ML. Also, providing an op
 
 ## Results at a Glance
 
-| Model | Clean Accuracy | PGD Attack (ε=0.10) | PGD Attack (ε=0.30) |
-|---|---|---|---|
-| Original | 96.7% | 40.7% | 22.1% |
-| Hardened | 94.1% | 84.0% | 56.4% |
+| Model | Clean Accuracy | False Positive Rate | Detection under PGD (ε=0.10) | Detection under PGD (ε=0.30) |
+|---|---|---|---|---|
+| Original | 97.0% | 3.5% | 54.5% | 26.5% |
+| Hardened (fine-tuned, 30% adversarial) | 96.3% | 4.4% | 88.8% | 61.7% |
+| Hardened (from scratch, 50% adversarial) | 94.9% | 6.1% | 99.0% | 75.1% |
+
+All numbers are measured on a held-out test set (157,361 flows, 27,767 attacks) that is never used for training or model selection.
 
 **Key finding:** 
-- Created a 97% threat detection model.
-- PGD adversarial training recovers 43 percentage points of robustness at ε=0.10 with only a 2.6% clean accuracy cost.
+- Created a 97% threat detection model with 99.2% attack recall on clean traffic.
+- White-box PGD drops attack detection from 99.2% to 26.5% at ε=0.30.
+- Adversarial training raises detection under PGD (ε=0.30) from 26.5% to 61.7%, at a cost of 0.7 points of clean accuracy.
 
 ---
 
 ## Objectives
 ### Threat Detection
-Train a neural network on real-world labeled network traffic (CICIDS-2017 dataset) to classify traffic as benign or malicious (96.7% accuracy, Attack Recall = 1.00).
+Train a neural network on real-world labeled network traffic (CICIDS-2017 dataset) to classify traffic as benign or malicious (97.0% accuracy, Attack Recall of 99.2%, 86.0% attack precision on the held-out test set).
 
 ### Adversarial Attacks
-Simulate a real attacker using FGSM and PGD attacks to craft malicious network traffic that the model misclassifies as safe. PGD reduces detection accuracy from 99.8% → 22.1% at ε=0.30.
+Simulate a real attacker using FGSM and PGD attacks to craft malicious network traffic that the model misclassifies as safe. PGD reduces detection accuracy from 99.2% → 26.5% at ε=0.30.
 
 ### Adversarial Defense
-Retrain the model using adversarial training (feeding it attack examples during training). Hardened model recovers to 56.4% under the same PGD attack with only a 2.6% drop in clean accuracy.
+Retrain the model with adversarial training (PGD-perturbed attack flows mixed into each training batch). The fine-tuned hardened model detects 61.7% of attacks under the same PGD attack (up from 26.5%), with only a 0.7-point drop in clean accuracy.
 
 ---
 
@@ -52,9 +56,9 @@ Network Flow Features (78)
 
 ## Attack Methods
 
-**FGSM (Fast Gradient Sign Method)** — Single-step white-box attack that changes the input to try to trick/fool the model. Limited effectiveness because of BatchNorm robustness (99.8% → 94.6%).
+**FGSM (Fast Gradient Sign Method)** — Single-step white-box attack that changes the input to try to trick/fool the model. Reduces detection from 99.2% → 43.8% at ε=0.30.
 
-**PGD (Projected Gradient Descent)** — Iterative attack (40 steps, α=0.01) using a margin loss to directly push the benign logit above the attack logit. Far more effective reducicng the accuracy from 99.8% → 22.1% at ε=0.30.
+**PGD (Projected Gradient Descent)** — Iterative attack (40 steps, α=0.01) using a margin loss to directly push the benign logit above the attack logit, projected back into the ε-ball after each step.. Stronger than FGSM: 99.2% → 26.5% at ε=0.30.
 
 ---
 
@@ -62,10 +66,15 @@ Network Flow Features (78)
 
 **Adversarial Training via Fine-tuning:**
 - Initialize from pre-trained weights (preserves clean accuracy)
-- Replace 30% of each training batch with PGD adversarial examples generated on the fly
+- In 30% of each training batch, attack-class flows are replaced with PGD adversarial examples (ε=0.10, 10 steps) generated on the fly against the current model
 - Lower learning rate (1e-4) to avoid overwriting learned features
-- Result: 84.0% detection accuracy under PGD ε=0.10 vs 40.7% for the original
+- Result: 88.8% detection under PGD ε=0.10 vs 54.5% for the original, and 61.7% vs 26.5% at ε=0.30
 
+---
+### Limitations
+- Perturbations are applied in standardized feature space and are not constrained to physically valid traffic (e.g. packet counts can become fractional or negative). This measures model robustness, not a guaranteed real-world evasion.
+- Attacks are white-box (full access to model gradients). Black-box attacks would be weaker.
+- Robustness is measured as attack-class recall; the false positive rate is reported alongside to show the hardened model isn't just flagging everything.
 ---
 
 ## Project Structure
@@ -141,8 +150,10 @@ PyTorch · scikit-learn · pandas · NumPy · CICIDS-2017
 - I learned that I had to only take 30% of each file which is still hundreds of thousands of rows. The full dataset is too big for my current RAM. 
 - I learned that F1 score is better for imbalanced classes because it balances both recall and precision. False positives and false negatives affect the score. <br>
 F1 uses a harmonic mean, the F1 score is only high if both precision and recall are high. 
-- Running FGSM with different epsilon values, the model held up well even with the strongest epsilon. Apparently this is a known phenomenon because FGSM works best on image models that are very sensitive to small changes. The model uses Batch Normalization which helps stablize the data as it moves through the network, making it harder for a single-step attack. So naturally, this makes the model more robust.
-- Training from scratch with 50% adversarial example was too aggressive and the harderned model forgot to detect clean attacks. The fix was to fine-tune the original model instead of starting from scratch since it knows how to classify already.
+- FGSM initially looked weak (99.8% → 94.6%), but that was because I was evaluating on training data the model was extremely confident on, where cross-entropy gradients nearly vanish. On a proper held-out set, FGSM is effective (99.2% → 43.8%), and PGD is stronger still.
+- Always call `model.eval()` before evaluating. My hardened models were benchmarked in training mode, so dropout randomized the attack's gradients and BatchNorm used per-batch statistics. That made the results meaningless (robust accuracy went *up* as the attack got stronger).
+- Data leakage is easy to miss: fitting the scaler before splitting, validating on the test set, duplicate rows appearing in both train and test, and evaluating attacks on training samples all inflate results.
+- An off-by-one in intent (`X_batch[:split]` as the clean part) meant "30% adversarial" was actually 70%. Checking what a ratio parameter really does is worth it.
 
 ---
 
