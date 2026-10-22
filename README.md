@@ -87,8 +87,7 @@ results/
     ├── training_curves.png
     ├── Final_Eval.png
     ├── attack_comparison.png
-    ├── defense_comparison.png
-    └── results.md
+    └── defense_comparison.png
 .gitignore
 README.md
 requirements.txt
@@ -99,18 +98,20 @@ requirements.txt
 
 ### Training — Loss & F1
 ![Training Curves](results/training_curves.png)
-- Loss decreases steadily each epoch
-- As the epoch increases, F1 score is stable and high (~0.93)
+- Loss decreases steadily each epoch. Training loss falls from ~0.12 to ~0.06 over 10 epochs
+- Validation F1 stays stable at ~0.89–0.93 (peak ~0.93)
 
 ### Adversarial Attack — FGSM vs PGD
 ![Attack Comparison](results/attack_comparison.png)
-- PGD is significantly more effective than FGSM
-- Model collapses to 22.1% accuracy under strong PGD
+- Baseline attack detection (no attack): 99.2%
+- PGD is consistently stronger than FGSM at every ε above 0.01
+- At ε=0.30, detection drops to 43.8% under FGSM and 26.5% under PGD
 
 ### Defense — Original vs Hardened
 ![Defense Comparison](results/defense_comparison.png)
-- Hardened model maintains much higher accuracy under attack
-- Small clean accuracy tradeoff (96.7% → 94.1%)
+- The hardened model (fine-tuned, 30% adversarial) stays above the original at every ε
+- Detection under PGD: 54.5% → 88.8% at ε=0.10, and 26.5% → 61.7% at ε=0.30
+- Small clean accuracy tradeoff (97.0% → 96.3%)
 
 ---
 
