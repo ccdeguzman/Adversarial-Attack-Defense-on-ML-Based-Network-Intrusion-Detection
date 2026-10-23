@@ -128,12 +128,20 @@ Download: https://www.unb.ca/cic/datasets/ids-2017.html → MachineLearningCSV.z
 git clone https://github.com/ccdeguzman/Adversarial-Attack-Defense-on-ML-Based-Network-Intrusion-Detection.git
 cd Adversarial-Attack-Defense-on-ML-Based-Network-Intrusion-Detection
 
-python -m venv venv
+python -m venv venv          # Python 3.10–3.12
 venv\Scripts\activate        # Windows
     OR
 source venv/bin/activate     # Mac/Linux
 
-pip install -r requirements.txt
+pip install -e ".[dev,notebooks,robustness]"
+```
+
+Dependencies are pinned to exact versions in `pyproject.toml`. Extras: `notebooks` (Jupyter, matplotlib), `robustness` (IBM ART, for cross-checking our PGD), `dev` (ruff, pytest). A plain `pip install -e .` installs only the core library.
+
+```bash
+ruff check .     # lint
+pytest           # tests (added in Phase 2)
+```
 ```
 
 Run notebooks in order: `threat_detection` → `adversarial_attacks` → `defenses`
