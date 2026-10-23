@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools==84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adversec"
+version = "0.1.0"
+description = "Adversarially robust ML intrusion detection on CICIDS-2017, with a CI/CD robustness gate."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+authors = [{ name = "Christian De Guzman" }]
+dependencies = [
+    "torch==2.13.0",
+    "numpy==2.2.6",
+    "pandas==2.3.3",
+    "scikit-learn==1.7.2",
+]
+
+[project.optional-dependencies]
+# Plots and notebooks (not needed by the CLI, CI or the serving image)
+notebooks = [
+    "matplotlib==3.10.9",
+    "jupyter==1.1.1",
+]
+# Independent PGD cross-check for the robustness gate (Phase 3)
+robustness = [
+    "adversarial-robustness-toolbox==1.20.1",
+]
+dev = [
+    "ruff==0.17.2",
+    "pytest==9.1.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+# Notebooks join the lint in Phase 1, once they are thin consumers of the package
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

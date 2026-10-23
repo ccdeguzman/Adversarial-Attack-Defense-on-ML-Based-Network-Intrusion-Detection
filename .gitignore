@@ -17,3 +17,6 @@ results/*.npz
 dist/
 build/
 .env
+.venv/
+.ruff_cache/
+.pytest_cache/
