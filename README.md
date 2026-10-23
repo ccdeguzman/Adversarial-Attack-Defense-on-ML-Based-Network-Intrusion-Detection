@@ -79,6 +79,8 @@ Network Flow Features (78)
 
 ## Project Structure
 ```
+src/adversec/
+    └── __init__.py
 notebooks/
     ├── threat_detection.ipynb
     ├── defenses.ipynb
@@ -89,8 +91,8 @@ results/
     ├── attack_comparison.png
     └── defense_comparison.png
 .gitignore
+pyproject.toml
 README.md
-requirements.txt
 ```
 ---
 
