@@ -144,7 +144,6 @@ Dependencies are pinned to exact versions in `pyproject.toml`. Extras: `notebook
 ruff check .     # lint
 pytest           # tests (added in Phase 2)
 ```
-```
 
 Run notebooks in order: `threat_detection` → `adversarial_attacks` → `defenses`
 
